@@ -82,5 +82,7 @@ renderPlot({
 
 You will notice that if there are a small number of clusters and they are a long way apart, this method works well. If there are lots of relatively large clusters, it starts to break down.
 
+Source at https://github.com/bobturneruk/rSMLMClusters.
+
 See my [website](https://sites.google.com/view/robert-turner) for more examples. Contact me on bob dot turner dot uk at gmail dot com with comments or questions.
 
