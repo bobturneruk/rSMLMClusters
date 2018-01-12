@@ -1,0 +1,86 @@
+---
+title: "Shiny Cluster Sim"
+author: "Bob Turner"
+date: "11 January 2018"
+output: html_document
+runtime: shiny
+---
+
+This App lets you simulate clustered single molecule localisation microscopy (PALM/STORM/etc.) data and then use the [DBSCAN algorithm](https://en.wikipedia.org/wiki/DBSCAN) to try and figure which molecule should be in what cluster. The first four sliders control the simulation. Cluster locations are drawn at random from a uniform distribution in a **500x500 nm square**. The clusters thenselves are also square and molecules are randomly distributed within them, again from a uniform distribution. **Uncertainty in localisation** is simulated by adding offsets to each molecule location randomly drawn from a normal distribution. Any points outside the 500x500 nm square after all this are deleted.
+
+You might image we're looking at **lipid rafts**, or **multi-protein complexes**.
+
+The final two sliders control the DBSCAN algorithm. **Eplison** is the maximum spacing between two molecules for them to be considered part of the same cluster. **Minimum points** is the smallest number of molecules required to form a cluster.
+
+```{r clustersim, echo=FALSE}
+
+source('locs_to_image.R')
+source('simulator.R')
+
+inputPanel(
+
+  sliderInput("n_clusters", label = "Number of clusters:",
+              min = 1, max = 50, value = 20, step = 1),
+
+  sliderInput("n_per_cluster", label = "Molecules per cluster:",
+              min = 1, max = 200, value = 20, step = 1),
+ 
+  sliderInput("cluster_dim", label = "Cluster dimensions (nm):",
+              min = 1, max = 200, value = 15, step = 1),
+
+  sliderInput("loc_p", label = "Localisation precision (variance, nm):",
+              min = 1, max = 50, value = 15, step = 1),
+  
+  sliderInput("epsilon", label = "DBSCAN epsilon:",
+              min = 1, max = 50, value = 20, step = 1),
+  
+  sliderInput("min_pts", label = "DBSCAN minimum points:",
+              min = 1, max = 10, value = 3, step = 1)
+  
+)
+```
+
+```{r render, echo=FALSE}
+
+renderPlot({
+  
+  library(magrittr)
+  
+  set.seed(1)
+  
+  my_sim<-simulate_uniform(n = input$n_clusters, xy_image = 500) %>%
+    create_clusters(molecules_per_cluster = input$n_per_cluster, cluster_size = input$cluster_dim) %>%
+    create_error(precision = sqrt(input$loc_p)) %>%
+    crop(image_xy = 500)
+  
+  library(ggplot2)
+
+  image_df<-locs_to_image(my_sim$x,my_sim$y,5)
+  
+  image<-ggplot(image_df,aes(x=x_nm,y=y_nm))+
+          geom_tile(aes(fill=count))+
+          coord_fixed()+
+          ggtitle("Image as histogram")
+  
+  library(fpc)
+  
+  my_sim$cluster<-dbscan(my_sim, eps = input$epsilon, MinPts = input$min_pts)$cluster
+  
+  scatter<-ggplot(my_sim,aes(x=x,y=y,colour=cluster))+
+          geom_point(alpha=0.4)+
+          coord_fixed()+
+          scale_colour_distiller(palette="Accent")+
+          ggtitle(paste(max(my_sim$cluster),"clusters found"))
+  
+  library(gridExtra)
+  library(grid)
+  
+  grid.arrange(image,scatter, ncol=2)
+  
+})
+```
+
+You will notice that if there are a small number of clusters and they are a long way apart, this method works well. If there are lots of relatively large clusters, it starts to break down.
+
+See my [website](https://sites.google.com/view/robert-turner) for more examples. Contact me on bob dot turner dot uk at gmail dot com with comments or questions.
+

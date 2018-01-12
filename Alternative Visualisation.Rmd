@@ -1,0 +1,49 @@
+---
+title: "An alternative 2d histogram visualisation"
+output: html_notebook
+---
+
+```{r setup, echo=FALSE}
+opts_chunk$set(echo = TRUE, cache=FALSE)
+read_chunk('locs_to_image.R')
+```
+
+I had a slight problem in one of my [previous notes](https://bobturneruk.github.io/Visualising_LM_data.nb.html) that I basically ignored! One of my image plots had some spurious transparent lines running accross it.
+
+My original code did this to load the dataset:
+
+```{r load_localisations}
+Tubulins_I<-read.csv("https://bobturneruk.github.io/Tubulins_I.csv")
+```
+
+Then this for the plot (50 nm pixel size):
+
+```{r plot_localisations, fig.width=10, fig.height=10}
+library(ggplot2)
+ggplot(Tubulins_I, aes(x=Tubulins_I$x..nm., y=Tubulins_I$y..nm.))+
+  geom_bin2d(binwidth=50, drop = FALSE)+
+  coord_fixed()
+```
+
+Notice the two transparent lines at the top of the plot. This is not entirely what I wanted. A bit of googling revealed that this has been [logged as an issue, but it is not actually a bug](https://github.com/tidyverse/ggplot2/issues/2202). I have therefore written (but not extensively tested!) a little utility function that uses the **raster** library to generate, in effect, a 2d histogram as a data frame which can then be plotted using **ggplot2**, so I can keep using all of the other good stuff in **ggplot2** with my localisation data.
+
+```{r locs_to_image}
+```
+
+
+I can then use this function to get a data frame which I can visualise using **geom_tile**.
+
+```{r replot_localisations, fig.width=10, fig.height=10}
+
+image_df<-locs_to_image(Tubulins_I$x..nm.,Tubulins_I$y..nm.,50)
+
+ggplot(image_df,aes(x=x_nm,y=y_nm))+
+  geom_tile(aes(fill=count))+
+  coord_fixed()
+
+```
+
+And no transparent lines.
+
+See my [website](https://sites.google.com/view/robert-turner) for more examples. Contact me on bob dot turner dot uk at gmail dot com with comments or questions.
+
