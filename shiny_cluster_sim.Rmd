@@ -6,7 +6,7 @@ output: html_document
 runtime: shiny
 ---
 
-This App lets you simulate clustered single molecule localisation microscopy (PALM/STORM/etc.) data and then use the [DBSCAN algorithm](https://en.wikipedia.org/wiki/DBSCAN) to try and figure which molecule should be in what cluster. The first four sliders control the simulation. Cluster locations are drawn at random from a uniform distribution in a **500x500 nm square**. The clusters thenselves are also square and molecules are randomly distributed within them, again from a uniform distribution. **Uncertainty in localisation** is simulated by adding offsets to each molecule location randomly drawn from a normal distribution. Any points outside the 500x500 nm square after all this are deleted.
+This App lets you simulate clustered single molecule localisation microscopy (PALM/STORM/etc.) data and then use the [DBSCAN algorithm](https://en.wikipedia.org/wiki/DBSCAN) (an unsupervised machine learning approach) to try and figure which molecule should be in what cluster. The first four sliders control the simulation. Cluster locations are drawn at random from a uniform distribution in a **500x500 nm square**. The clusters thenselves are also square and molecules are randomly distributed within them, again from a uniform distribution. **Uncertainty in localisation** is simulated by adding offsets to each molecule location randomly drawn from a normal distribution. Any points outside the 500x500 nm square after all this are deleted.
 
 You might image we're looking at **lipid rafts**, or **multi-protein complexes**.
 
